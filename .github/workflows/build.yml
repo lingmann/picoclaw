@@ -42,5 +42,5 @@ jobs:
           git push origin latest
           gh release create latest build/picoclaw-linux-amd64 \
             --title "Latest Build" \
-            --notes "Automated build from \`main\` at $(git rev-parse --short HEAD) ($(date -u +%Y-%m-%d %H:%M UTC))" \
+            --notes "Automated build from \`main\` at $(git rev-parse --short HEAD) ($(date -u '+%Y-%m-%d %H:%M UTC'))" \
             --prerelease
