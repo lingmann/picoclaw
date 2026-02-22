@@ -3,6 +3,7 @@ name: build
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,5 +17,19 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build
-        run: make build-all
+      - name: Build Linux x86_64
+        run: |
+          make generate
+          GOOS=linux GOARCH=amd64 go build -v -tags stdjson \
+            -ldflags "-X main.version=$(git describe --tags --always --dirty 2>/dev/null || echo dev) \
+                      -X main.gitCommit=$(git rev-parse --short=8 HEAD) \
+                      -X main.buildTime=$(date +%FT%T%z) \
+                      -X main.goVersion=$(go version | awk '{print $3}') \
+                      -s -w" \
+            -o build/picoclaw-linux-amd64 ./cmd/picoclaw
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: picoclaw-linux-amd64
+          path: build/picoclaw-linux-amd64
