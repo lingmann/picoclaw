@@ -28,8 +28,19 @@ jobs:
                       -s -w" \
             -o build/picoclaw-linux-amd64 ./cmd/picoclaw
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: picoclaw-linux-amd64
-          path: build/picoclaw-linux-amd64
+      - name: Update latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Delete existing latest release if it exists
+          gh release delete latest --yes 2>/dev/null || true
+          git tag -d latest 2>/dev/null || true
+          git push origin :refs/tags/latest 2>/dev/null || true
+
+          # Create new latest release with the binary
+          git tag latest
+          git push origin latest
+          gh release create latest build/picoclaw-linux-amd64 \
+            --title "Latest Build" \
+            --notes "Automated build from \`main\` at $(git rev-parse --short HEAD) ($(date -u +%Y-%m-%d %H:%M UTC))" \
+            --prerelease
